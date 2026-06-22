@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RubyDung - Isometric Base Builder</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="loading-screen">
+    <div class="loading-content">
+      <h1 class="title-glitch">RUBYDUNG</h1>
+      <p class="subtitle">An isometric base-building sandbox</p>
+      <div class="loading-bar">
+        <div id="loading-progress"></div>
+      </div>
+      <p id="loading-text">Generating rubylands...</p>
+      <button id="start-btn" disabled>ENTER THE RUBYLANDS</button>
+    </div>
+  </div>
+
+  <div id="game-container" class="hidden">
+    <canvas id="game-canvas"></canvas>
+
+    <div id="top-bar">
+      <div class="brand">
+        <span class="brand-ruby">◆</span>
+        <span class="brand-text">RUBYDUNG</span>
+      </div>
+      <div class="resources">
+        <div class="resource" title="Wood">
+          <img class="res-icon" id="icon-wood" alt="" />
+          <span id="res-wood">50</span>
+        </div>
+        <div class="resource" title="Stone">
+          <img class="res-icon" id="icon-stone" alt="" />
+          <span id="res-stone">30</span>
+        </div>
+        <div class="resource" title="Food">
+          <img class="res-icon" id="icon-food" alt="" />
+          <span id="res-food">20</span>
+        </div>
+        <div class="resource" title="Gold">
+          <img class="res-icon" id="icon-gold" alt="" />
+          <span id="res-gold">20</span>
+        </div>
+        <div class="resource" title="Population">
+          <img class="res-icon" id="icon-pop" alt="" />
+          <span id="res-pop">3</span>
+          <span class="muted">/</span>
+          <span id="res-pop-max">5</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="btn-music" title="Toggle Music">♪</button>
+        <button id="btn-sfx" title="Toggle Sound Effects">♫</button>
+        <button id="btn-help" title="Help (H)">?</button>
+        <button id="btn-save" title="Save (Ctrl+S)">💾</button>
+        <button id="btn-load" title="Load (Ctrl+L)">📂</button>
+        <button id="btn-reset" title="New World">🔄</button>
+      </div>
+    </div>
+
+    <div id="left-panel" class="panel">
+      <div class="panel-header">
+        <h3>BLOCKS</h3>
+      </div>
+      <div id="block-palette" class="palette"></div>
+
+      <div class="panel-header" style="margin-top: 12px;">
+        <h3>TOOLS</h3>
+      </div>
+      <div id="tool-palette" class="palette"></div>
+
+      <div class="panel-header" style="margin-top: 12px;">
+        <h3>BRUSH</h3>
+      </div>
+      <div class="brush-control">
+        <input type="range" id="brush-size" min="1" max="5" value="1" />
+        <span id="brush-size-label">1</span>
+      </div>
+    </div>
+
+    <div id="right-panel" class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="build">BUILD</button>
+        <button class="tab" data-tab="heroes">HEROES</button>
+        <button class="tab" data-tab="world">WORLD</button>
+      </div>
+
+      <div id="tab-build" class="tab-content active">
+        <div class="build-grid" id="build-grid"></div>
+        <p class="hint">Select a template, then click on the ground to place it.</p>
+      </div>
+
+      <div id="tab-heroes" class="tab-content">
+        <div id="hero-list" class="hero-list"></div>
+        <div class="hero-actions">
+          <button id="btn-spawn-hero">+ Spawn Hero (5 Food)</button>
+          <button id="btn-rally">Set Rally Point</button>
+        </div>
+      </div>
+
+      <div id="tab-world" class="tab-content">
+        <div class="world-controls">
+          <label>Time of Day</label>
+          <input type="range" id="time-of-day" min="0" max="24" value="10" step="0.1" />
+          <span id="time-label">Morning</span>
+          <label class="checkbox-label">
+            <input type="checkbox" id="auto-time" />
+            <span>Auto day/night cycle</span>
+          </label>
+
+          <label>World Size</label>
+          <select id="world-size">
+            <option value="64">Small (64x64)</option>
+            <option value="96" selected>Medium (96x96)</option>
+            <option value="128">Large (128x128)</option>
+          </select>
+
+          <label>Seed</label>
+          <div class="seed-row">
+            <input type="number" id="seed-input" value="42" />
+            <button id="btn-regen">Regenerate</button>
+          </div>
+
+          <label>Foliage Density</label>
+          <input type="range" id="foliage-density" min="0" max="100" value="40" />
+        </div>
+      </div>
+    </div>
+
+    <div id="bottom-bar">
+      <div class="info">
+        <span id="coords">-</span>
+        <span class="sep">|</span>
+        <span id="selected-block">Grass</span>
+        <span class="sep">|</span>
+        <span id="fps">- FPS</span>
+      </div>
+      <div class="mode-info">
+        <span id="mode-text">Build Mode</span>
+      </div>
+      <div class="quick-help">
+        <span id="now-playing" title="Now playing">♪ -</span>
+        <span class="sep">|</span>
+        L-Click: Place · R-Click: Remove · Q/E: Rotate · Wheel: Zoom
+      </div>
+    </div>
+
+    <div id="help-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>How to Play</h2>
+        <div class="help-section">
+          <h4>Camera</h4>
+          <ul>
+            <li><b>Right-drag</b> or <b>Q/E</b> - Rotate the world</li>
+            <li><b>Middle-drag</b> or <b>WASD</b> - Pan camera</li>
+            <li><b>Wheel</b> - Zoom in/out</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h4>Building</h4>
+          <ul>
+            <li><b>Left-click</b> - Place selected block or template</li>
+            <li><b>Right-click</b> - Remove block</li>
+            <li><b>1-0</b> - Quick-select block types</li>
+            <li><b>B/X/R/L/F</b> - Switch tools</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h4>Heroes</h4>
+          <ul>
+            <li>Spawn heroes from the Heroes panel (costs 5 food)</li>
+            <li>Click a hero to select, click ground to move</li>
+            <li>Heroes gather nearby resources automatically</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h4>Sandbox</h4>
+          <ul>
+            <li>World tab: regenerate terrain, change seed, time of day</li>
+            <li>Brush size slider for batch terraforming</li>
+            <li>Save/Load buttons store world in browser localStorage</li>
+          </ul>
+        </div>
+        <button id="close-help">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/noise.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/heroes.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
