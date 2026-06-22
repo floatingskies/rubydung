@@ -87,7 +87,7 @@ README.md
 
 ## license
 
-MIT, see LICENSE. RubyDung was Notch's 2009 prototype. This is a fan tribute, not affiliated with or endorsed by Notch or Mojang.
+GPLV3, see LICENSE. RubyDung was Notch's 2009 prototype. This is a fan tribute, not affiliated with or endorsed by Notch or Mojang.
 
 ## credits
 
